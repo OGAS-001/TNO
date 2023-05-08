@@ -1,6 +1,6 @@
-use std::env;
-use std::fs::File;
 use std::{
+    env,
+    fs::File,
     io::{self, Error, Read, Write},
     thread,
     time::{self, Duration},
@@ -19,7 +19,7 @@ macro_rules! printf {
 }
 
 fn tnop(s: String, t: Duration) {
-    let bytes = s.as_bytes(); // 转换为字节数组
+    let bytes: &[u8] = s.as_bytes(); // 转换为字节数组
     /*
     使用 iter 方法创建了一个可以遍历字节数组的迭代器。
     iter 方法会依次返回集合中的每一个元素。
@@ -54,13 +54,12 @@ fn main() -> Result<(), Error> {
     let args: Vec<String> = env::args().collect();
     //let path: &str = "./tno.txt";
     let path: &str = string_to_static_str(args[1].to_string());
-    let time = args[2].to_string().parse::<u64>().unwrap();
+    let time: u64 = args[2].to_string().parse::<u64>().unwrap();
     
-    let mut input: File = File::open(path).expect("Failed to open.");
-    //let buffered = BufReader::new(input);
-    let mut contents: String = String::new();
-    input.read_to_string(&mut contents).unwrap();
+    let mut file: File = File::open(path).expect("Failed to open.");
+    let mut buffer: String = String::new();
+    file.read_to_string(&mut buffer).unwrap();
     let ten_millis: Duration = time::Duration::from_millis(time); // ms
-    tnop(contents, ten_millis);
+    tnop(buffer, ten_millis);
     Ok(())
 }
