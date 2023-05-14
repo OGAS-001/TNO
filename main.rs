@@ -1,9 +1,9 @@
 use std::{
     env,
-    fs::File,
-    io::{self, Error, Read, Write},
-    thread,
-    time::{self, Duration},
+    fs,
+    io::{self, Error, Write},
+    time::Duration,
+    thread
 };
 
 macro_rules! printf {
@@ -17,26 +17,19 @@ macro_rules! printf {
         io::stdout().flush().unwrap();
     }
 }
-
-fn tnop(s: String, t: Duration) {
-    let bytes: &[u8] = s.as_bytes(); // 转换为字节数组
-    /*
-    使用 iter 方法创建了一个可以遍历字节数组的迭代器。
-    iter 方法会依次返回集合中的每一个元素。
-    之后的 enumerate 则将 iter 的每个输出作为元素逐一封装在对应的元组中返回。
-    元组的第一个元素是索引，第二个元素是指向集合中字节的引用，
-    使用 enumerate 可以较方便地获得迭代索引。
-    */
-    /*
-    for (i, &item) in bytes.iter().enumerate() {
-        println!("{} {}", i, item as char);
-    }
-    */
-    for &item in bytes.iter() {
-        printf!("{}", item as char);
-        thread::sleep(t);
+fn tnop(s: &str, t: u64){
+    let mut chars = s.chars();
+    loop{
+        //printf!("{}", chars.next().unwrap());
+        let char: Option<char> = chars.next();
+        match char{
+            Some(char) => {printf!("{}",char);},
+            None => break
+        }
+        thread::sleep(Duration::from_millis(t));
     }
 }
+
 
 fn string_to_static_str(s:String) -> &'static str {
     /*
@@ -51,15 +44,11 @@ cargo run ./tno.txt 250
 ```
 */
 fn main() -> Result<(), Error> {
-    let args: Vec<String> = env::args().collect();
-    //let path: &str = "./tno.txt";
-    let path: &str = string_to_static_str(args[1].to_string());
-    let time: u64 = args[2].to_string().parse::<u64>().unwrap();
-    
-    let mut file: File = File::open(path).expect("Failed to open.");
-    let mut buffer: String = String::new();
-    file.read_to_string(&mut buffer).unwrap();
-    let ten_millis: Duration = time::Duration::from_millis(time); // ms
-    tnop(buffer, ten_millis);
+    let args: Vec<String> = env::args().collect();  // 接收命令行传入
+    let path: &str = string_to_static_str(args[1].to_string());  // 参数解析 文件路径
+    let time: u64 = args[2].to_string().parse::<u64>().unwrap();  // 参数解析 间隔时间
+    let content: Vec<u8> = fs::read(path).unwrap();  //打卡文件流
+    let text: &str = std::str::from_utf8(&content).unwrap();  // 转换为str
+    tnop(text, time);
     Ok(())
 }
